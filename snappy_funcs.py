@@ -390,7 +390,6 @@ def getS3values(
     pollution_delta,
     gains,
     dem_prods,
-    errorfile,
     s3_instrument="OLCI",
     slstr_res=None,
 ):
@@ -431,10 +430,7 @@ def getS3values(
             pass
         # Log if coordinate is in file but invalid pixel
         elif mask == 255:
-            with open(str(errorfile), "a") as fd:
-                fd.write(
-                    "%s, %s: Invalid pixel.\n" % (prod.getName(), coord[0])
-                )
+            pass
         else:
 
             # Save resources by working on a small subset around each
@@ -445,19 +441,8 @@ def getS3values(
                 if not prod_subset or pix_coords[0] is None:
                     out_values = None  # None if location not in product
                     prod_subset = None  # None to stop processing
-                    with open(str(errorfile), "a") as fd:
-                        fd.write(
-                            "%s, %s: Unable to subset,"
-                            " too close to the edge.\n"
-                            % (prod.getName(), coord[0])
-                        )
 
             except:  # Bare except needed to catch the JAVA exception
-                with open(str(errorfile), "a") as fd:
-                    fd.write(
-                        "%s, %s: Corrupt file or"
-                        " SNAP issue.\n" % (prod.getName(), coord[0])
-                    )
                 prod_subset = None  # Set a marker to ignore rest of processing
 
             if prod_subset:  # Run the processing if subset exists
@@ -486,11 +471,6 @@ def getS3values(
                     processing = True
 
                 except:  # Bare except needed to catch the JAVA exception
-                    with open(str(errorfile), "a") as fd:
-                        fd.write(
-                            "%s, %s: Invalid pixel.\n"
-                            % (prod.getName(), coord[0])
-                        )
                     processing = False
 
                 if processing:
@@ -582,13 +562,13 @@ def getS3values(
                         )
 
                     # Add experimental cloud over snow result
-                    out_values.update(
-                        {
-                            "auto_cloud": idepix_cloud(
-                                prod_subset, pix_coords[0], pix_coords[1]
-                            )
-                        }
-                    )
+                    #out_values.update(
+                    #    {
+                    #        "auto_cloud": idepix_cloud(
+                    #            prod_subset, pix_coords[0], pix_coords[1]
+                    #        )
+                    #    }
+                    #)
 
                     # Garbage collector
                     snap_albedo.dispose()
@@ -608,20 +588,14 @@ def getS3values(
                 # Garbage collector
                 prod_subset.dispose()
 
-    # Log if no sites are found in image
-    if not stored_vals:
-        with open(str(errorfile), "a") as fd:
-            fd.write("%s: No sites in image.\n" % (prod.getName()))
-
     # Garbage collector
     prod.dispose()
 
     return stored_vals
 
 
-def getS3bands(
-    in_file, coords, band_names, errorfile, s3_instrument, slstr_res
-):
+
+def getS3bands(in_file, coords, band_names, s3_instrument, slstr_res):
     """Extract data from Sentinel-3 bands.
 
     Read the input S3 file and extract data from a list of given bands for the
@@ -666,22 +640,11 @@ def getS3bands(
                     process_flag = True  # Set a flag to process data
 
                 except:  # Bare except needed to catch the JAVA exception
-                    with open(str(errorfile), "a") as fd:
-                        fd.write(
-                            "%s, %s: Unable to subset around coordinates.\n"
-                            % (prod.getName(), coord[0])
-                        )
-                        prod_subset = None
+                    prod_subset = None
 
                 if not prod_subset or pix_coords[0] is None:
                     process_flag = False  # None to stop processing
 
-                    with open(str(errorfile), "a") as fd:  # Log error
-                        fd.write(
-                            "%s, %s: Unable to subset,"
-                            " too close to the edge.\n"
-                            % (prod.getName(), coord[0])
-                        )
             else:
                 # If SLSTR, open full image: because of the bands at different
                 # resolutions, a resampling would be necessary before being
@@ -717,11 +680,6 @@ def getS3bands(
                     processing = True
 
                 except:  # Bare except needed to catch the JAVA exception
-                    with open(str(errorfile), "a") as fd:
-                        fd.write(
-                            "%s, %s: Invalid pixel.\n"
-                            % (prod_subset.getName(), coord[0])
-                        )
                     processing = False  # Deactivate processing
 
                 if processing:
@@ -776,12 +734,7 @@ def getS3bands(
 
                     # Garbage collector
                     prod_subset = None
-
-    # Log if no sites are found in image
-    if not stored_vals:
-        with open(str(errorfile), "a") as fd:
-            fd.write("%s: No sites in image.\n" % (prod.getName()))
-
+                    
     # Garbage collector
     prod = None
 
