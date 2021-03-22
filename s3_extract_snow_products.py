@@ -228,7 +228,7 @@ def main(
         "snow_specific_area",
         "ndsi",
         "ndbi",
-        "auto_cloud",
+        # "auto_cloud", # removed because not working (Baptiste Vandecrux 22-07-2020)
         "sza",
         "vza",
         "saa",

@@ -306,7 +306,7 @@ def idepix_cloud(in_prod, xpix, ypix):
     parameters = HashMap()
     parameters.put("demBandName", "band_1")
     idepix_cld = GPF.createProduct(
-        "Snap.Idepix.Olci.S3Snow", parameters, in_prod
+            "Snap.Idepix.Olci.S3Snow", parameters, in_prod
     )
 
     cloudband = idepix_cld.getBand("cloud_over_snow")
@@ -582,13 +582,14 @@ def getS3values(
                         )
 
                     # Add experimental cloud over snow result
-                    out_values.update(
-                        {
-                            "auto_cloud": idepix_cloud(
-                                prod_subset, pix_coords[0], pix_coords[1]
-                            )
-                        }
-                    )
+                    # Removed because not working (Baptiste Vandecrux 27-07-2020)
+                    #out_values.update(
+                    #    {
+                    #        "auto_cloud": idepix_cloud(
+                    #            prod_subset, pix_coords[0], pix_coords[1]
+                    #        )
+                    #    }
+                    #)
 
                     # Garbage collector
                     snap_albedo.dispose()
